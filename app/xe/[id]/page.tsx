@@ -51,6 +51,8 @@ async function getCarFromDb(id: string): Promise<Car | null> {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const specs = dbCar.specifications as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const verSpecs = (dbCar.versions[0]?.specs as any) ?? {};
     return {
       id: dbCar.id,
       name: dbCar.name,
@@ -62,13 +64,13 @@ async function getCarFromDb(id: string): Promise<Car | null> {
       variants,
       features: dbCar.features,
       specifications: {
-        engine: specs?.engine ?? "",
-        power: specs?.power ?? "",
-        torque: specs?.torque ?? "",
-        transmission: specs?.transmission ?? "",
-        fuelConsumption: specs?.fuelConsumption ?? "",
-        seats: Number(specs?.seats ?? 5),
-        dimensions: specs?.dimensions ?? "",
+        engine: specs?.engine || verSpecs?.engine || "",
+        power: specs?.power || verSpecs?.power || "",
+        torque: specs?.torque || verSpecs?.torque || "",
+        transmission: specs?.transmission || verSpecs?.transmission || "",
+        fuelConsumption: specs?.fuelConsumption || verSpecs?.fuel || "",
+        seats: Number(specs?.seats || verSpecs?.seats || 5),
+        dimensions: specs?.dimensions || verSpecs?.dimensions || "",
       },
       description: dbCar.description,
       descriptionImages: dbCar.descriptionImages,
