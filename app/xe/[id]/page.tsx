@@ -39,7 +39,7 @@ async function getCarFromDb(id: string): Promise<Car | null> {
     });
     if (!dbCar) return null;
 
-    const variants: CarVariant[] = dbCar.versions.flatMap((ver) =>
+    const variants: CarVariant[] = dbCar.versions.flatMap((ver: { name: string; colors: { name: string; colorCode: string | null; colorImages: string[]; price: number }[] }) =>
       ver.colors.map((c) => ({
         color: c.name,
         colorCode: c.colorCode || "#888888",
