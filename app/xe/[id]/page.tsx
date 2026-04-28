@@ -82,6 +82,20 @@ async function getCarFromDb(id: string): Promise<Car | null> {
   }
 }
 
+function renderInline(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|<u>[^<]+<\/u>|!\[[^\]]*\]\([^)]+\)|\[[^\]]+\]\([^)]+\))/g);
+  return parts.map((part, i) => {
+    if (/^\*\*[^*]+\*\*$/.test(part)) return <strong key={i}>{part.slice(2, -2)}</strong>;
+    if (/^\*[^*]+\*$/.test(part)) return <em key={i}>{part.slice(1, -1)}</em>;
+    if (/^<u>[^<]+<\/u>$/.test(part)) return <u key={i}>{part.slice(3, -4)}</u>;
+    const img = part.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if (img) return <img key={i} src={img[2]} alt={img[1]} className="inline max-h-48 rounded" />;
+    const link = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (link) return <a key={i} href={link[2]} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">{link[1]}</a>;
+    return part;
+  });
+}
+
 export async function generateStaticParams() {
   return cars.map((car) => ({
     id: car.id,
@@ -355,6 +369,14 @@ export default async function CarDetailPage({ params }: PageProps) {
               <CardContent className="py-8 px-6 md:px-12">
                 <article className="prose prose-slate max-w-none">
                   {car.description.split("\n\n").map((paragraph, index) => {
+                    if (paragraph.startsWith("![")) {
+                      const m = paragraph.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+                      if (m) return (
+                        <div key={index} className="my-8 rounded-lg overflow-hidden">
+                          <img src={m[2]} alt={m[1]} className="w-full h-auto object-cover rounded-lg" />
+                        </div>
+                      );
+                    }
                     if (paragraph.startsWith("## ")) {
                       const descImage = car.descriptionImages?.[Math.min(index, (car.descriptionImages?.length || 1) - 1)];
                       return (
@@ -369,7 +391,7 @@ export default async function CarDetailPage({ params }: PageProps) {
                             </div>
                           )}
                           <h3 className="text-xl font-bold mt-8 mb-4 text-foreground">
-                            {paragraph.replace("## ", "")}
+                            {renderInline(paragraph.replace("## ", ""))}
                           </h3>
                         </div>
                       );
@@ -378,14 +400,14 @@ export default async function CarDetailPage({ params }: PageProps) {
                       return (
                         <ul key={index} className="list-disc list-inside space-y-1 my-4 text-muted-foreground">
                           {items.map((item, i) => (
-                            <li key={i}>{item.replace("- ", "")}</li>
+                            <li key={i}>{renderInline(item.replace(/^- /, ""))}</li>
                           ))}
                         </ul>
                       );
                     } else {
                       return (
                         <p key={index} className="text-muted-foreground leading-relaxed mb-4">
-                          {paragraph}
+                          {renderInline(paragraph)}
                         </p>
                       );
                     }

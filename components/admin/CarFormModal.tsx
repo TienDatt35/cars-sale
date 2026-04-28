@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   X,
   Plus,
@@ -14,6 +14,8 @@ import {
   List,
   Link as LinkIcon,
   Image as ImageIcon,
+  Heading2,
+  AlignLeft,
 } from "lucide-react";
 import type { AdminCar, AdminVersion } from "@/lib/store";
 
@@ -72,6 +74,66 @@ export default function CarFormModal({ car, onClose, onSave }: CarFormModalProps
   const [activeTab, setActiveTab] = useState<"info" | "variants" | "content">("info");
   const [collapsedVersions, setCollapsedVersions] = useState<number[]>([]);
   const [uploading, setUploading] = useState(false);
+  const descRef = useRef<HTMLTextAreaElement>(null);
+
+  const applyInline = (before: string, after: string = before) => {
+    const ta = descRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = ta.value.substring(start, end) || "văn bản";
+    const newVal =
+      ta.value.substring(0, start) + before + selected + after + ta.value.substring(end);
+    setFormData((prev) => ({ ...prev, description: newVal }));
+    setTimeout(() => {
+      ta.focus();
+      ta.selectionStart = start + before.length;
+      ta.selectionEnd = start + before.length + selected.length;
+    }, 0);
+  };
+
+  const applyLinePrefix = (prefix: string) => {
+    const ta = descRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const lineStart = ta.value.lastIndexOf("\n", start - 1) + 1;
+    const alreadyHas = ta.value.substring(lineStart).startsWith(prefix);
+    const newVal = alreadyHas
+      ? ta.value.substring(0, lineStart) + ta.value.substring(lineStart + prefix.length)
+      : ta.value.substring(0, lineStart) + prefix + ta.value.substring(lineStart);
+    const delta = alreadyHas ? -prefix.length : prefix.length;
+    setFormData((prev) => ({ ...prev, description: newVal }));
+    setTimeout(() => {
+      ta.focus();
+      ta.selectionStart = start + delta;
+      ta.selectionEnd = start + delta;
+    }, 0);
+  };
+
+  const insertLink = () => {
+    const url = prompt("Nhập URL liên kết:");
+    if (!url) return;
+    applyInline("[", `](${url})`);
+  };
+
+  const handleDescImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const url = await uploadImage(file);
+    if (url) {
+      const ta = descRef.current;
+      const pos = ta ? ta.selectionStart : formData.description.length;
+      const insert = `\n![ảnh](${url})\n`;
+      setFormData((prev) => ({
+        ...prev,
+        description:
+          prev.description.substring(0, pos) + insert + prev.description.substring(pos),
+      }));
+    }
+    setUploading(false);
+    e.target.value = "";
+  };
 
   const uploadImage = async (file: File): Promise<string | null> => {
     const form = new FormData();
@@ -623,34 +685,89 @@ export default function CarFormModal({ car, onClose, onSave }: CarFormModalProps
                   Bài viết mô tả
                 </label>
                 <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-                  <div className="bg-gray-100 border-b border-gray-300 flex items-center p-2 space-x-2">
-                    <button className="p-1.5 hover:bg-gray-200 rounded text-gray-700">
+                  <div className="bg-gray-100 border-b border-gray-300 flex flex-wrap items-center p-2 gap-1">
+                    <button
+                      type="button"
+                      title="In đậm"
+                      onClick={() => applyInline("**")}
+                      className="p-1.5 hover:bg-gray-200 rounded text-gray-700 font-bold"
+                    >
                       <Bold className="w-4 h-4" />
                     </button>
-                    <button className="p-1.5 hover:bg-gray-200 rounded text-gray-700">
+                    <button
+                      type="button"
+                      title="In nghiêng"
+                      onClick={() => applyInline("*")}
+                      className="p-1.5 hover:bg-gray-200 rounded text-gray-700 italic"
+                    >
                       <Italic className="w-4 h-4" />
                     </button>
-                    <button className="p-1.5 hover:bg-gray-200 rounded text-gray-700">
+                    <button
+                      type="button"
+                      title="Gạch chân"
+                      onClick={() => applyInline("<u>", "</u>")}
+                      className="p-1.5 hover:bg-gray-200 rounded text-gray-700 underline"
+                    >
                       <Underline className="w-4 h-4" />
                     </button>
                     <div className="w-px h-5 bg-gray-300 mx-1" />
-                    <button className="p-1.5 hover:bg-gray-200 rounded text-gray-700">
+                    <button
+                      type="button"
+                      title="Tiêu đề (##)"
+                      onClick={() => applyLinePrefix("## ")}
+                      className="p-1.5 hover:bg-gray-200 rounded text-gray-700"
+                    >
+                      <Heading2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      title="Danh sách gạch đầu dòng"
+                      onClick={() => applyLinePrefix("- ")}
+                      className="p-1.5 hover:bg-gray-200 rounded text-gray-700"
+                    >
                       <List className="w-4 h-4" />
                     </button>
-                    <button className="p-1.5 hover:bg-gray-200 rounded text-gray-700">
+                    <button
+                      type="button"
+                      title="Đoạn văn thường"
+                      onClick={() => applyLinePrefix("")}
+                      className="p-1.5 hover:bg-gray-200 rounded text-gray-700"
+                    >
+                      <AlignLeft className="w-4 h-4" />
+                    </button>
+                    <div className="w-px h-5 bg-gray-300 mx-1" />
+                    <button
+                      type="button"
+                      title="Chèn liên kết"
+                      onClick={insertLink}
+                      className="p-1.5 hover:bg-gray-200 rounded text-gray-700"
+                    >
                       <LinkIcon className="w-4 h-4" />
                     </button>
-                    <button className="p-1.5 hover:bg-gray-200 rounded text-gray-700">
+                    <label
+                      title="Chèn ảnh"
+                      className="p-1.5 hover:bg-gray-200 rounded text-gray-700 cursor-pointer"
+                    >
                       <ImageIcon className="w-4 h-4" />
-                    </button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleDescImageUpload}
+                      />
+                    </label>
                   </div>
                   <textarea
-                    className="w-full p-4 min-h-[200px] outline-none resize-y"
+                    ref={descRef}
+                    className="w-full p-4 min-h-[250px] outline-none resize-y font-mono text-sm"
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Viết nội dung giới thiệu chi tiết về xe..."
+                    onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                    placeholder={"Viết nội dung giới thiệu chi tiết về xe...\n\n## Tiêu đề phần\n\nĐoạn văn bình thường\n\n- Gạch đầu dòng 1\n- Gạch đầu dòng 2"}
                   />
                 </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  Dùng toolbar để định dạng. <span className="font-mono">**in đậm**</span> · <span className="font-mono">*in nghiêng*</span> · <span className="font-mono">## Tiêu đề</span> · <span className="font-mono">- Danh sách</span>
+                </p>
               </div>
             </div>
           )}
