@@ -759,7 +759,7 @@ export default function CarFormModal({ car, onClose, onSave }: CarFormModalProps
                   </div>
                   <textarea
                     ref={descRef}
-                    className="w-full p-4 min-h-[250px] outline-none resize-y font-mono text-sm"
+                    className="w-full p-4 min-h-[250px] outline-none resize-y text-sm leading-relaxed"
                     value={formData.description}
                     onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                     placeholder={"Viết nội dung giới thiệu chi tiết về xe...\n\n## Tiêu đề phần\n\nĐoạn văn bình thường\n\n- Gạch đầu dòng 1\n- Gạch đầu dòng 2"}

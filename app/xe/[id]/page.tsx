@@ -398,7 +398,7 @@ export default async function CarDetailPage({ params }: PageProps) {
                     } else if (paragraph.startsWith("- ")) {
                       const items = paragraph.split("\n");
                       return (
-                        <ul key={index} className="list-disc list-inside space-y-1 my-4 text-muted-foreground">
+                        <ul key={index} className="list-disc list-inside space-y-2 my-4 text-foreground">
                           {items.map((item, i) => (
                             <li key={i}>{renderInline(item.replace(/^- /, ""))}</li>
                           ))}
@@ -406,7 +406,7 @@ export default async function CarDetailPage({ params }: PageProps) {
                       );
                     } else {
                       return (
-                        <p key={index} className="text-muted-foreground leading-relaxed mb-4">
+                        <p key={index} className="text-foreground leading-relaxed mb-4">
                           {renderInline(paragraph)}
                         </p>
                       );
