@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Car {
+  id                String       @id @default(cuid())
+  name              String
+  brand             String       @default("Ford")
+  category          String
+  basePrice         Float
+  thumbnail         String       @default("")
+  images            String[]
+  features          String[]
+  specifications    Json
+  description       String       @default("") @db.Text
+  descriptionImages String[]
+  promotions        String[]
+  isFeatured        Boolean      @default(false)
+  locked            Boolean      @default(false)
+  tags              String[]
+  versions          CarVersion[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model CarVersion {
+  id      Int        @id @default(autoincrement())
+  name    String
+  specs   Json
+  order   Int        @default(0)
+  car     Car        @relation(fields: [carId], references: [id], onDelete: Cascade)
+  carId   String
+  colors  CarColor[]
+}
+
+model CarColor {
+  id          Int        @id @default(autoincrement())
+  name        String
+  colorCode   String     @default("#888888")
+  colorImages String[]
+  price       Float
+  order       Int        @default(0)
+  version     CarVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  versionId   Int
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  type      String
+  name      String
+  phone     String
+  car       String
+  payment   String
+  status    String   @default("Chưa hỗ trợ")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Settings {
+  id       Int    @id @default(1)
+  address  String @default("")
+  hotline  String @default("")
+  email    String @default("")
+  facebook String @default("")
+  zalo     String @default("")
+  map      String @default("")
+}

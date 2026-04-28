@@ -1,0 +1,1027 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  LayoutDashboard, Car, FileText, Settings, 
+  Search, Plus, Edit, Trash2, Lock, Unlock, 
+  X, Check, AlertTriangle, Eye, ChevronRight, ChevronDown, ChevronUp,
+  Menu, Bold, Italic, Underline, List, Link as LinkIcon, Image as ImageIcon, MapPin, Phone, Mail, Facebook, MessageCircle
+} from 'lucide-react';
+
+// --- MOCK DATA ---
+const initialStats = {
+  visits: 12450,
+  leads: 342,
+  topCars: [
+    { name: 'VinFast VF 8', views: 3200, percentage: 85 },
+    { name: 'Toyota Vios', views: 2800, percentage: 70 },
+    { name: 'Hyundai Accent', views: 2100, percentage: 55 },
+    { name: 'Ford Ranger', views: 1800, percentage: 45 },
+  ],
+  topPrices: [
+    { range: '500 - 700 Triệu', count: 450, percentage: 90 },
+    { range: '700 - 1 Tỷ', count: 320, percentage: 65 },
+    { range: '1 - 1.5 Tỷ', count: 210, percentage: 40 },
+    { range: 'Dưới 500 Triệu', count: 150, percentage: 30 },
+  ]
+};
+
+const initialCars = [
+  {
+    id: 'C001',
+    name: 'VinFast VF 8',
+    locked: false,
+    tags: ['Điện', 'SUV', 'Bán chạy'],
+    features: ['Trợ lái toàn diện ADAS', 'Trợ lý ảo thông minh ViVi', 'Màn hình cảm ứng 15.6 inch', 'Cập nhật phần mềm từ xa (FOTA)'],
+    promo: ['Tặng kèm sạc tại nhà', 'Miễn phí 1 năm bảo hiểm vật chất', 'Voucher nghỉ dưỡng Vinpearl'],
+    description: 'VinFast VF 8 là mẫu SUV điện cỡ trung với thiết kế sang trọng, hiện đại.',
+    versions: [
+      {
+        id: 1,
+        name: 'Eco',
+        specs: {
+          engine: 'Động cơ điện kép (2 Motor)',
+          power: '349 mã lực',
+          torque: '500 Nm',
+          transmission: 'Hộp số tự động 1 cấp',
+          fuel: '0 L/100km (Thuần điện)',
+          seats: '5',
+          dimensions: '4750 x 1900 x 1660 mm'
+        },
+        colors: [
+          { id: 11, name: 'Trắng (Brahmaputra White)', price: 1090000000 },
+          { id: 12, name: 'Đen (Desdemona Black)', price: 1090000000 }
+        ]
+      },
+      {
+        id: 2,
+        name: 'Plus',
+        specs: {
+          engine: 'Động cơ điện kép (2 Motor)',
+          power: '402 mã lực',
+          torque: '620 Nm',
+          transmission: 'Hộp số tự động 1 cấp',
+          fuel: '0 L/100km (Thuần điện)',
+          seats: '5',
+          dimensions: '4750 x 1900 x 1660 mm'
+        },
+        colors: [
+          { id: 21, name: 'Đỏ (Crimson Red)', price: 1270000000 }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'C002',
+    name: 'Hyundai Accent',
+    locked: false,
+    tags: ['Sedan', 'Giá rẻ', 'Gia đình'],
+    features: ['Cửa sổ trời', 'Khởi động từ xa', 'Màn hình giải trí 8 inch', 'Cốp mở điện thông minh'],
+    promo: ['Giảm tiền mặt 30 triệu đồng', 'Tặng dán phim cách nhiệt', 'Tặng thảm lót sàn cao cấp'],
+    description: 'Hyundai Accent thế hệ mới mang đến không gian rộng rãi và tiết kiệm nhiên liệu.',
+    versions: [
+      {
+        id: 1,
+        name: '1.4 MT',
+        specs: {
+          engine: 'Kappa 1.4L MPI',
+          power: '100 mã lực',
+          torque: '132 Nm',
+          transmission: 'Số sàn 6 cấp (6MT)',
+          fuel: '6.2 L/100km',
+          seats: '5',
+          dimensions: '4440 x 1729 x 1470 mm'
+        },
+        colors: [
+          { id: 11, name: 'Trắng', price: 426000000 },
+          { id: 12, name: 'Bạc', price: 426000000 }
+        ]
+      },
+      {
+        id: 2,
+        name: '1.4 AT Đặc biệt',
+        specs: {
+          engine: 'Kappa 1.4L MPI',
+          power: '100 mã lực',
+          torque: '132 Nm',
+          transmission: 'Số tự động 6 cấp (6AT)',
+          fuel: '6.2 L/100km',
+          seats: '5',
+          dimensions: '4440 x 1729 x 1470 mm'
+        },
+        colors: [
+          { id: 21, name: 'Trắng', price: 542000000 },
+          { id: 22, name: 'Đen', price: 542000000 }
+        ]
+      }
+    ]
+  }
+];
+
+const initialLeads = [
+  { id: 'L001', type: 'Báo giá', name: 'Nguyễn Văn An', phone: '0901234567', car: 'VinFast VF 8', payment: 'Trả góp', status: 'Chưa hỗ trợ', date: '26/04/2026' },
+  { id: 'L002', type: 'Lái thử', name: 'Trần Thị Bích', phone: '0987654321', car: 'Hyundai Accent', payment: 'Trả thẳng', status: 'Đang hỗ trợ', date: '25/04/2026' },
+  { id: 'L003', type: 'Báo giá', name: 'Lê Hoàng Hải', phone: '0912345678', car: 'Toyota Vios', payment: 'Trả góp', status: 'Đã hỗ trợ', date: '24/04/2026' },
+  { id: 'L004', type: 'Lái thử', name: 'Phạm Mai Phương', phone: '0909888777', car: 'Ford Ranger', payment: 'Chưa rõ', status: 'Chưa hỗ trợ', date: '26/04/2026' },
+];
+
+const initialSettings = {
+  address: '123 Đường Nguyễn Văn Linh, Quận 7, TP.HCM',
+  hotline: '1900 1234',
+  email: 'contact@carsale.vn',
+  facebook: 'https://facebook.com/carsale.vn',
+  zalo: 'https://zalo.me/carsale',
+  map: 'https://maps.google.com/?q=123+Nguyen+Van+Linh'
+};
+
+// --- HELPER COMPONENTS ---
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+};
+
+// --- MAIN APPLICATION ---
+export default function App() {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // States for Views
+  const [cars, setCars] = useState(initialCars);
+  const [leads, setLeads] = useState(initialLeads);
+  const [settings, setSettings] = useState(initialSettings);
+
+  // --- VIEW RENDERING ---
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'dashboard': return <DashboardView />;
+      case 'cars': return <CarCatalogView cars={cars} setCars={setCars} />;
+      case 'leads': return <LeadsView leads={leads} setLeads={setLeads} />;
+      case 'settings': return <SettingsView settings={settings} setSettings={setSettings} />;
+      default: return <DashboardView />;
+    }
+  };
+
+  return (
+    <div className="flex h-screen bg-gray-50 font-sans text-gray-800 overflow-hidden">
+      {/* Sidebar */}
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-slate-900 text-white transition-all duration-300 flex flex-col`}>
+        <div className="h-16 flex items-center justify-center border-b border-slate-800">
+          <Car className="text-blue-400 w-8 h-8" />
+          {sidebarOpen && <span className="ml-3 font-bold text-xl tracking-wider">AUTO CMS</span>}
+        </div>
+        <nav className="flex-1 py-4 overflow-y-auto">
+          <ul className="space-y-1 px-2">
+            <NavItem icon={<LayoutDashboard />} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} open={sidebarOpen} />
+            <NavItem icon={<Car />} label="Danh mục xe" active={activeTab === 'cars'} onClick={() => setActiveTab('cars')} open={sidebarOpen} />
+            <NavItem icon={<FileText />} label="Báo giá & Lái thử" active={activeTab === 'leads'} onClick={() => setActiveTab('leads')} open={sidebarOpen} />
+            <NavItem icon={<Settings />} label="Quản trị Website" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} open={sidebarOpen} />
+          </ul>
+        </nav>
+        {/* User profile mock */}
+        <div className="p-4 border-t border-slate-800 flex items-center">
+          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold">AD</div>
+          {sidebarOpen && (
+            <div className="ml-3">
+              <p className="text-sm font-medium">Admin User</p>
+              <p className="text-xs text-slate-400">Quản trị viên</p>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col h-full overflow-hidden">
+        {/* Header */}
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center px-4 justify-between shadow-sm z-10">
+          <div className="flex items-center">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-md hover:bg-gray-100 text-gray-500">
+              <Menu className="w-5 h-5" />
+            </button>
+            <h1 className="ml-4 text-xl font-semibold text-gray-800">
+              {activeTab === 'dashboard' && 'Dashboard Thống Kê'}
+              {activeTab === 'cars' && 'Quản lý Danh mục xe'}
+              {activeTab === 'leads' && 'Quản lý Báo giá & Lái thử'}
+              {activeTab === 'settings' && 'Cấu hình Website'}
+            </h1>
+          </div>
+          <div className="flex items-center space-x-4">
+             <div className="relative">
+                <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                <MessageCircle className="w-6 h-6 text-gray-500 cursor-pointer hover:text-blue-500" />
+             </div>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-auto p-6">
+          {renderContent()}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// --- SIDEBAR ITEM ---
+const NavItem = ({ icon, label, active, onClick, open }) => (
+  <li>
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center px-3 py-3 rounded-lg transition-colors ${
+        active ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+      }`}
+    >
+      <span className="w-6 h-6 flex items-center justify-center">{icon}</span>
+      {open && <span className="ml-3 font-medium text-sm text-left flex-1">{label}</span>}
+    </button>
+  </li>
+);
+
+// ==========================================
+// 1. DASHBOARD VIEW
+// ==========================================
+const DashboardView = () => {
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Top Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title="Lượt truy cập" value={initialStats.visits.toLocaleString()} icon={<Eye className="text-blue-500" />} color="bg-blue-50 border-blue-100" />
+        <StatCard title="Yêu cầu Báo giá & Lái thử" value={initialStats.leads} icon={<FileText className="text-green-500" />} color="bg-green-50 border-green-100" />
+        <StatCard title="Xe trong kho" value="128" icon={<Car className="text-purple-500" />} color="bg-purple-50 border-purple-100" />
+        <StatCard title="Tỷ lệ chuyển đổi" value="4.5%" icon={<Check className="text-orange-500" />} color="bg-orange-50 border-orange-100" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top Cars Chart */}
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4 text-gray-800">Top xe được quan tâm nhất</h3>
+          <div className="space-y-4">
+            {initialStats.topCars.map((car, idx) => (
+              <div key={idx} className="flex flex-col">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="font-medium">{car.name}</span>
+                  <span className="text-gray-500">{car.views.toLocaleString()} lượt xem</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2.5">
+                  <div className="bg-blue-500 h-2.5 rounded-full" style={{ width: `${car.percentage}%` }}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Top Prices Chart */}
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4 text-gray-800">Mức giá được tìm hiểu nhiều</h3>
+          <div className="space-y-4">
+            {initialStats.topPrices.map((price, idx) => (
+              <div key={idx} className="flex flex-col">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="font-medium">{price.range}</span>
+                  <span className="text-gray-500">{price.count} lượt tìm</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2.5">
+                  <div className="bg-green-500 h-2.5 rounded-full" style={{ width: `${price.percentage}%` }}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const StatCard = ({ title, value, icon, color }) => (
+  <div className={`p-6 rounded-xl border ${color} shadow-sm flex items-center space-x-4`}>
+    <div className="p-3 bg-white rounded-lg shadow-sm">
+      {icon}
+    </div>
+    <div>
+      <p className="text-sm font-medium text-gray-500">{title}</p>
+      <h4 className="text-2xl font-bold text-gray-800">{value}</h4>
+    </div>
+  </div>
+);
+
+// ==========================================
+// 2. CAR CATALOG VIEW (CRUD)
+// ==========================================
+const CarCatalogView = ({ cars, setCars }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCar, setEditingCar] = useState(null);
+  
+  // Confirm Modal state
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', carId: null, carName: '' });
+
+  const filteredCars = cars.filter(car => car.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  const handleOpenModal = (car = null) => {
+    setEditingCar(car);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveCar = (carData) => {
+    if (editingCar) {
+      setCars(cars.map(c => c.id === carData.id ? carData : c));
+    } else {
+      setCars([...cars, { ...carData, id: `C${Math.floor(Math.random() * 1000)}`, locked: false }]);
+    }
+    setIsModalOpen(false);
+  };
+
+  const handleConfirmAction = (type, carId, carName) => {
+    setConfirmModal({ isOpen: true, type, carId, carName });
+  };
+
+  const executeAction = () => {
+    if (confirmModal.type === 'delete') {
+      setCars(cars.filter(c => c.id !== confirmModal.carId));
+    } else if (confirmModal.type === 'lock' || confirmModal.type === 'unlock') {
+      setCars(cars.map(c => c.id === confirmModal.carId ? { ...c, locked: confirmModal.type === 'lock' } : c));
+    }
+    setConfirmModal({ isOpen: false, type: '', carId: null, carName: '' });
+  };
+
+  return (
+    <div className="space-y-4 animate-fade-in relative">
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
+        <div className="relative w-full sm:w-96">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input 
+            type="text" 
+            placeholder="Tìm kiếm tên xe..." 
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <button 
+          onClick={() => handleOpenModal()}
+          className="flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+        >
+          <Plus className="w-5 h-5 mr-2" /> Thêm xe mới
+        </button>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-600">
+                <th className="py-3 px-4">Mã xe</th>
+                <th className="py-3 px-4">Tên xe</th>
+                <th className="py-3 px-4">Phiên bản</th>
+                <th className="py-3 px-4">Màu sắc</th>
+                <th className="py-3 px-4">Trạng thái</th>
+                <th className="py-3 px-4 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredCars.length === 0 ? (
+                <tr><td colSpan="6" className="text-center py-8 text-gray-500">Không tìm thấy xe nào.</td></tr>
+              ) : filteredCars.map(car => (
+                <tr key={car.id} className={`hover:bg-gray-50 ${car.locked ? 'bg-gray-100 opacity-60' : ''}`}>
+                  <td className="py-3 px-4 text-sm">{car.id}</td>
+                  <td className="py-3 px-4 font-medium text-blue-600">{car.name}</td>
+                  <td className="py-3 px-4 text-sm">{car.versions?.length || 0} bản</td>
+                  <td className="py-3 px-4 text-sm">
+                    {car.versions?.reduce((total, v) => total + (v.colors?.length || 0), 0) || 0} tuỳ chọn
+                  </td>
+                  <td className="py-3 px-4 text-sm">
+                    {car.locked 
+                      ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"><Lock className="w-3 h-3 mr-1"/> Đã khoá</span>
+                      : <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><Unlock className="w-3 h-3 mr-1"/> Đang bán</span>
+                    }
+                  </td>
+                  <td className="py-3 px-4 flex justify-end space-x-2">
+                    <button onClick={() => handleOpenModal(car)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Chỉnh sửa">
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    {car.locked ? (
+                      <button onClick={() => handleConfirmAction('unlock', car.id, car.name)} className="p-1.5 text-green-600 hover:bg-green-50 rounded" title="Mở khoá">
+                        <Unlock className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      <button onClick={() => handleConfirmAction('lock', car.id, car.name)} className="p-1.5 text-yellow-600 hover:bg-yellow-50 rounded" title="Khoá">
+                        <Lock className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button onClick={() => handleConfirmAction('delete', car.id, car.name)} className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Xoá">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Car Form Modal */}
+      {isModalOpen && <CarFormModal car={editingCar} onClose={() => setIsModalOpen(false)} onSave={handleSaveCar} />}
+
+      {/* Confirmation Modal */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
+            <div className="flex items-center mb-4 text-yellow-600">
+              <AlertTriangle className="w-6 h-6 mr-2" />
+              <h3 className="text-lg font-bold text-gray-900">Xác nhận thao tác</h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Bạn có chắc chắn muốn {confirmModal.type === 'delete' ? 'xoá' : confirmModal.type === 'lock' ? 'khoá' : 'mở khoá'} thông tin xe <span className="font-bold">{confirmModal.carName}</span>?
+              {confirmModal.type === 'delete' && ' Thao tác này không thể hoàn tác.'}
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button onClick={() => setConfirmModal({isOpen: false, type: '', carId: null, carName: ''})} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium">Hủy</button>
+              <button 
+                onClick={executeAction} 
+                className={`px-4 py-2 rounded-lg text-white font-medium ${
+                  confirmModal.type === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
+                }`}
+              >
+                Đồng ý
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- SUB-COMPONENT: CAR FORM MODAL ---
+const CarFormModal = ({ car, onClose, onSave }) => {
+  const defaultSpecs = { engine: '', power: '', torque: '', transmission: '', fuel: '', seats: '', dimensions: '' };
+
+  const [formData, setFormData] = useState(car || {
+    id: '', name: '', tags: [], promo: [''], features: [''], description: '',
+    versions: [{ id: Date.now(), name: '', specs: { ...defaultSpecs }, colors: [{ id: Date.now() + 1, name: '', price: '' }] }]
+  });
+  
+  const [tagInput, setTagInput] = useState('');
+  const [activeFormTab, setActiveFormTab] = useState('info'); // info, variants, content
+  const [collapsedVersions, setCollapsedVersions] = useState([]); // State lưu trạng thái thu gọn/mở rộng
+
+  const toggleVersionCollapse = (versionId) => {
+    setCollapsedVersions(prev => 
+      prev.includes(versionId) ? prev.filter(id => id !== versionId) : [...prev, versionId]
+    );
+  };
+
+  const handleAddTag = (e) => {
+    if (e.key === 'Enter' && tagInput.trim()) {
+      e.preventDefault();
+      if (!formData.tags.includes(tagInput.trim())) {
+        setFormData({ ...formData, tags: [...formData.tags, tagInput.trim()] });
+      }
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setFormData({ ...formData, tags: formData.tags.filter(t => t !== tagToRemove) });
+  };
+
+  const handleStringArrayChange = (field, index, value) => {
+    const newList = [...(formData[field] || [])];
+    newList[index] = value;
+    setFormData({ ...formData, [field]: newList });
+  };
+
+  const addStringArrayItem = (field) => {
+    setFormData({ ...formData, [field]: [...(formData[field] || []), ''] });
+  };
+
+  const removeStringArrayItem = (field, index) => {
+    setFormData({ ...formData, [field]: formData[field].filter((_, i) => i !== index) });
+  };
+
+  const handleVersionSpecChange = (versionId, specField, value) => {
+    const newVersions = formData.versions.map(v => 
+      v.id === versionId ? { ...v, specs: { ...v.specs, [specField]: value } } : v
+    );
+    setFormData({ ...formData, versions: newVersions });
+  };
+
+  const handleVersionChange = (versionId, field, value) => {
+    const newVersions = formData.versions.map(v => v.id === versionId ? { ...v, [field]: value } : v);
+    setFormData({ ...formData, versions: newVersions });
+  };
+
+  const addVersion = () => {
+    const newVersion = { id: Date.now(), name: '', specs: { ...defaultSpecs }, colors: [{ id: Date.now() + 1, name: '', price: '' }] };
+    setFormData({ ...formData, versions: [...formData.versions, newVersion] });
+  };
+
+  const removeVersion = (versionId) => {
+    setFormData({ ...formData, versions: formData.versions.filter(v => v.id !== versionId) });
+  };
+
+  const handleColorChange = (versionId, colorId, field, value) => {
+    const newVersions = formData.versions.map(v => {
+      if (v.id === versionId) {
+        const newColors = v.colors.map(c => c.id === colorId ? { ...c, [field]: value } : c);
+        return { ...v, colors: newColors };
+      }
+      return v;
+    });
+    setFormData({ ...formData, versions: newVersions });
+  };
+
+  const addColor = (versionId) => {
+    const newVersions = formData.versions.map(v => {
+      if (v.id === versionId) {
+        return { ...v, colors: [...(v.colors || []), { id: Date.now(), name: '', price: '' }] };
+      }
+      return v;
+    });
+    setFormData({ ...formData, versions: newVersions });
+  };
+
+  const removeColor = (versionId, colorId) => {
+    const newVersions = formData.versions.map(v => {
+      if (v.id === versionId) {
+        return { ...v, colors: v.colors.filter(c => c.id !== colorId) };
+      }
+      return v;
+    });
+    setFormData({ ...formData, versions: newVersions });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4 sm:p-6">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col animate-fade-in-up">
+        {/* Header */}
+        <div className="flex justify-between items-center p-5 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-gray-800">{car ? 'Chỉnh sửa thông tin xe' : 'Khởi tạo thông tin xe'}</h2>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"><X className="w-5 h-5"/></button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 px-5 pt-2">
+          {['info', 'variants', 'content'].map((tab) => (
+            <button 
+              key={tab}
+              onClick={() => setActiveFormTab(tab)}
+              className={`px-4 py-2 border-b-2 font-medium text-sm transition-colors ${
+                activeFormTab === tab ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {tab === 'info' && 'Thông tin chung'}
+              {tab === 'variants' && 'Phiên bản & Màu sắc'}
+              {tab === 'content' && 'Mô tả & Khuyến mãi'}
+            </button>
+          ))}
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-6 bg-gray-50/50">
+          
+          {/* TAB 1: INFO */}
+          {activeFormTab === 'info' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tên dòng xe *</label>
+                <input 
+                  type="text" className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                  value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  placeholder="VD: Toyota Camry 2024"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tags nổi bật (Nhấn Enter để thêm)</label>
+                <div className="p-2 border border-gray-300 rounded-lg bg-white flex flex-wrap gap-2 items-center">
+                  {formData.tags.map(tag => (
+                    <span key={tag} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-md flex items-center">
+                      {tag} <X className="w-3 h-3 ml-1 cursor-pointer" onClick={() => removeTag(tag)}/>
+                    </span>
+                  ))}
+                  <input 
+                    type="text" className="flex-1 min-w-[150px] outline-none text-sm p-1" 
+                    value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={handleAddTag}
+                    placeholder="Thêm tag..."
+                  />
+                </div>
+              </div>
+              
+              <div className="pt-4 border-t border-gray-200">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">Tính năng nổi bật</label>
+                  <button onClick={() => addStringArrayItem('features')} className="text-blue-600 text-sm font-medium flex items-center hover:underline">
+                    <Plus className="w-4 h-4 mr-1"/> Thêm tính năng
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {(formData.features || []).map((feature, index) => (
+                    <div key={index} className="flex gap-2 items-center">
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      <input 
+                        type="text" className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm outline-none" 
+                        value={feature} onChange={(e) => handleStringArrayChange('features', index, e.target.value)}
+                        placeholder="VD: Trợ lái toàn diện ADAS..."
+                      />
+                      <button onClick={() => removeStringArrayItem('features', index)} className="text-red-400 p-2 hover:bg-red-50 rounded" title="Xoá dòng này">
+                        <X className="w-5 h-5"/>
+                      </button>
+                    </div>
+                  ))}
+                  {(!formData.features || formData.features.length === 0) && (
+                    <div className="text-sm text-gray-500 italic">Chưa có tính năng nổi bật nào.</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: VARIANTS */}
+          {activeFormTab === 'variants' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
+                <div>
+                  <h3 className="font-semibold text-gray-800">Danh sách Phiên bản & Tuỳ chọn Màu sắc</h3>
+                  <p className="text-sm text-gray-500">Mỗi phiên bản có thông số kỹ thuật và các tuỳ chọn màu sắc, mức giá riêng.</p>
+                </div>
+                <button onClick={addVersion} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center hover:bg-blue-700 transition">
+                  <Plus className="w-4 h-4 mr-1"/> Thêm phiên bản
+                </button>
+              </div>
+
+              {formData.versions?.map((ver, vIndex) => {
+                const isCollapsed = collapsedVersions.includes(ver.id);
+                return (
+                <div key={ver.id} className="bg-white p-5 border border-gray-200 rounded-xl shadow-sm relative transition-all">
+                  <div className="absolute right-5 top-4 flex items-center space-x-1">
+                    <button onClick={() => toggleVersionCollapse(ver.id)} className="p-1.5 text-gray-500 hover:bg-gray-100 hover:text-blue-600 rounded transition" title={isCollapsed ? "Mở rộng" : "Thu gọn"}>
+                      {isCollapsed ? <ChevronDown className="w-5 h-5"/> : <ChevronUp className="w-5 h-5"/>}
+                    </button>
+                    <button onClick={() => removeVersion(ver.id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded transition" title="Xoá phiên bản">
+                      <Trash2 className="w-5 h-5"/>
+                    </button>
+                  </div>
+
+                  <h4 
+                    className="font-bold text-gray-800 flex items-center cursor-pointer w-max select-none" 
+                    onClick={() => toggleVersionCollapse(ver.id)}
+                  >
+                    <span className="bg-blue-100 text-blue-800 w-6 h-6 flex items-center justify-center rounded-full text-sm mr-2">{vIndex + 1}</span>
+                    Phiên bản: <span className="ml-1 text-blue-600 font-medium">{ver.name || '(Chưa đặt tên)'}</span>
+                  </h4>
+                  
+                  {!isCollapsed && (
+                    <div className="mt-5 animate-fade-in border-t border-gray-100 pt-5">
+                      <div className="mb-5">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Tên phiên bản *</label>
+                        <input type="text" placeholder="VD: 1.4 AT Đặc biệt" className="w-full md:w-1/2 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value={ver.name} onChange={(e) => handleVersionChange(ver.id, 'name', e.target.value)} />
+                      </div>
+
+                      {/* Fixed Specs for this version */}
+                      <div className="mb-5 bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+                        <h5 className="text-sm font-semibold text-blue-800 mb-3">Thông số kỹ thuật cố định</h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Động cơ</label>
+                            <input type="text" placeholder="VD: Động cơ điện kép" className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 outline-none" value={ver.specs?.engine || ''} onChange={(e) => handleVersionSpecChange(ver.id, 'engine', e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Công suất</label>
+                            <input type="text" placeholder="VD: 349 mã lực" className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 outline-none" value={ver.specs?.power || ''} onChange={(e) => handleVersionSpecChange(ver.id, 'power', e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Mô-men xoắn</label>
+                            <input type="text" placeholder="VD: 500 Nm" className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 outline-none" value={ver.specs?.torque || ''} onChange={(e) => handleVersionSpecChange(ver.id, 'torque', e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Hộp số</label>
+                            <input type="text" placeholder="VD: Tự động 1 cấp" className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 outline-none" value={ver.specs?.transmission || ''} onChange={(e) => handleVersionSpecChange(ver.id, 'transmission', e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Tiêu thụ nhiên liệu</label>
+                            <input type="text" placeholder="VD: 6.2 L/100km" className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 outline-none" value={ver.specs?.fuel || ''} onChange={(e) => handleVersionSpecChange(ver.id, 'fuel', e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Số chỗ ngồi</label>
+                            <input type="text" placeholder="VD: 5" className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 outline-none" value={ver.specs?.seats || ''} onChange={(e) => handleVersionSpecChange(ver.id, 'seats', e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Kích thước (D x R x C)</label>
+                            <input type="text" placeholder="VD: 4750 x 1900 x 1660 mm" className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 outline-none" value={ver.specs?.dimensions || ''} onChange={(e) => handleVersionSpecChange(ver.id, 'dimensions', e.target.value)} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Colors for this version */}
+                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div className="flex justify-between items-center mb-3">
+                          <span className="text-sm font-semibold text-gray-800">Màu sắc & Giá của phiên bản này</span>
+                          <button onClick={() => addColor(ver.id)} className="text-blue-600 text-sm font-medium flex items-center hover:underline">
+                            <Plus className="w-4 h-4 mr-1"/> Thêm màu
+                          </button>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          {ver.colors?.map((color, cIndex) => (
+                            <div key={color.id} className="flex gap-3 items-center bg-white p-2 rounded border border-gray-200 shadow-sm">
+                              <input type="text" placeholder="Tên màu (VD: Trắng Ngọc Trai)" className="flex-1 p-2 text-sm border border-gray-300 rounded outline-none focus:border-blue-500" value={color.name} onChange={(e) => handleColorChange(ver.id, color.id, 'name', e.target.value)} />
+                              <input type="number" placeholder="Mức giá (VNĐ)" className="flex-1 p-2 text-sm border border-gray-300 rounded outline-none focus:border-blue-500" value={color.price} onChange={(e) => handleColorChange(ver.id, color.id, 'price', e.target.value)} />
+                              <button onClick={() => removeColor(ver.id, color.id)} className="text-red-400 p-2 hover:bg-red-50 rounded" title="Xoá màu này">
+                                <X className="w-5 h-5"/>
+                              </button>
+                            </div>
+                          ))}
+                          {(!ver.colors || ver.colors.length === 0) && (
+                            <div className="text-sm text-gray-500 italic text-center py-3">Chưa có tuỳ chọn màu nào cho phiên bản này.</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+              
+              {(!formData.versions || formData.versions.length === 0) && (
+                <div className="text-center py-10 bg-white rounded-xl border border-dashed border-gray-300 text-gray-500">
+                  Xe chưa có phiên bản nào. Vui lòng bấm <span className="font-semibold text-blue-600">Thêm phiên bản</span> để bắt đầu.
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: CONTENT */}
+          {activeFormTab === 'content' && (
+            <div className="space-y-6">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">Chương trình khuyến mãi</label>
+                  <button onClick={() => addStringArrayItem('promo')} className="text-blue-600 text-sm font-medium flex items-center hover:underline">
+                    <Plus className="w-4 h-4 mr-1"/> Thêm khuyến mãi
+                  </button>
+                </div>
+                <div className="space-y-3 p-4 bg-orange-50 rounded-lg border border-orange-100">
+                  {(formData.promo || []).map((p, index) => (
+                    <div key={index} className="flex gap-2 items-center">
+                      <span className="text-orange-500 font-bold">🎁</span>
+                      <input 
+                        type="text" className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm outline-none" 
+                        value={p} onChange={(e) => handleStringArrayChange('promo', index, e.target.value)}
+                        placeholder="VD: Tặng kèm sạc tại nhà..."
+                      />
+                      <button onClick={() => removeStringArrayItem('promo', index)} className="text-red-400 p-2 hover:bg-red-50 rounded" title="Xoá khuyến mãi này">
+                        <X className="w-5 h-5"/>
+                      </button>
+                    </div>
+                  ))}
+                  {(!formData.promo || formData.promo.length === 0) && (
+                    <div className="text-sm text-gray-500 italic text-center py-2">Chưa có chương trình khuyến mãi nào.</div>
+                  )}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bài viết mô tả (Rich Text Editor giả lập)</label>
+                <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
+                  {/* Mock Toolbar */}
+                  <div className="bg-gray-100 border-b border-gray-300 flex items-center p-2 space-x-2">
+                    <button className="p-1.5 hover:bg-gray-200 rounded text-gray-700" title="Bold"><Bold className="w-4 h-4" /></button>
+                    <button className="p-1.5 hover:bg-gray-200 rounded text-gray-700" title="Italic"><Italic className="w-4 h-4" /></button>
+                    <button className="p-1.5 hover:bg-gray-200 rounded text-gray-700" title="Underline"><Underline className="w-4 h-4" /></button>
+                    <div className="w-px h-5 bg-gray-300 mx-1"></div>
+                    <button className="p-1.5 hover:bg-gray-200 rounded text-gray-700" title="Bullet List"><List className="w-4 h-4" /></button>
+                    <button className="p-1.5 hover:bg-gray-200 rounded text-gray-700" title="Link"><LinkIcon className="w-4 h-4" /></button>
+                    <button className="p-1.5 hover:bg-gray-200 rounded text-gray-700" title="Insert Image"><ImageIcon className="w-4 h-4" /></button>
+                  </div>
+                  {/* Editor content */}
+                  <textarea 
+                    className="w-full p-4 min-h-[200px] outline-none resize-y"
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    placeholder="Viết nội dung giới thiệu chi tiết về xe tại đây..."
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">* Trên thực tế, component này sẽ sử dụng thư viện như TinyMCE, CKEditor hoặc Quill.</p>
+              </div>
+            </div>
+          )}
+
+        </div>
+
+        {/* Footer */}
+        <div className="p-5 border-t border-gray-200 flex justify-end space-x-3 bg-white rounded-b-xl">
+          <button onClick={onClose} className="px-5 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium text-gray-700">Đóng</button>
+          <button onClick={() => onSave(formData)} className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center">
+            <Check className="w-4 h-4 mr-2" /> Lưu thông tin
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 3. LEADS (BÁO GIÁ & LÁI THỬ) VIEW
+// ==========================================
+const LeadsView = ({ leads, setLeads }) => {
+  const [selectedLead, setSelectedLead] = useState(null);
+
+  const updateStatus = (id, newStatus) => {
+    setLeads(leads.map(lead => lead.id === id ? { ...lead, status: newStatus } : lead));
+    if (selectedLead && selectedLead.id === id) {
+      setSelectedLead({ ...selectedLead, status: newStatus });
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'Chưa hỗ trợ': return 'bg-red-100 text-red-700 border-red-200';
+      case 'Đang hỗ trợ': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+      case 'Đã hỗ trợ': return 'bg-green-100 text-green-700 border-green-200';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  return (
+    <div className="space-y-4 animate-fade-in relative">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-600">
+                <th className="py-3 px-4">Loại YC</th>
+                <th className="py-3 px-4">Khách hàng</th>
+                <th className="py-3 px-4">Số điện thoại</th>
+                <th className="py-3 px-4">Xe quan tâm</th>
+                <th className="py-3 px-4">Ngày ĐK</th>
+                <th className="py-3 px-4">Trạng thái</th>
+                <th className="py-3 px-4 text-right">Chi tiết</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {leads.map(lead => (
+                <tr key={lead.id} className="hover:bg-gray-50">
+                  <td className="py-3 px-4">
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${lead.type === 'Báo giá' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                      {lead.type}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 font-medium text-gray-800">{lead.name}</td>
+                  <td className="py-3 px-4 text-sm">{lead.phone}</td>
+                  <td className="py-3 px-4 text-sm font-medium text-blue-600">{lead.car}</td>
+                  <td className="py-3 px-4 text-sm text-gray-500">{lead.date}</td>
+                  <td className="py-3 px-4">
+                    <select 
+                      className={`text-xs font-medium px-2 py-1 rounded border outline-none ${getStatusColor(lead.status)}`}
+                      value={lead.status}
+                      onChange={(e) => updateStatus(lead.id, e.target.value)}
+                    >
+                      <option value="Chưa hỗ trợ">Chưa hỗ trợ</option>
+                      <option value="Đang hỗ trợ">Đang hỗ trợ</option>
+                      <option value="Đã hỗ trợ">Đã hỗ trợ</option>
+                    </select>
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <button onClick={() => setSelectedLead(lead)} className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition">
+                      <Eye className="w-5 h-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Lead Detail Modal */}
+      {selectedLead && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md animate-fade-in-up">
+            <div className="flex justify-between items-center p-5 border-b border-gray-100">
+              <h3 className="font-bold text-lg text-gray-800">Chi tiết đăng ký</h3>
+              <button onClick={() => setSelectedLead(null)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5"/></button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="grid grid-cols-3 gap-2 border-b border-gray-100 pb-3">
+                <span className="text-sm text-gray-500">Loại Yêu Cầu</span>
+                <span className="col-span-2 font-medium">{selectedLead.type}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 border-b border-gray-100 pb-3">
+                <span className="text-sm text-gray-500">Họ và Tên</span>
+                <span className="col-span-2 font-medium">{selectedLead.name}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 border-b border-gray-100 pb-3">
+                <span className="text-sm text-gray-500">Số điện thoại</span>
+                <span className="col-span-2 font-medium text-blue-600">{selectedLead.phone}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 border-b border-gray-100 pb-3">
+                <span className="text-sm text-gray-500">Dòng xe</span>
+                <span className="col-span-2 font-medium">{selectedLead.car}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 border-b border-gray-100 pb-3">
+                <span className="text-sm text-gray-500">Thanh toán</span>
+                <span className="col-span-2 font-medium bg-gray-100 px-2 py-0.5 rounded w-max">{selectedLead.payment}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 items-center">
+                <span className="text-sm text-gray-500">Trạng thái</span>
+                <div className="col-span-2">
+                   <select 
+                      className={`text-sm font-medium px-3 py-1.5 rounded border w-full outline-none ${getStatusColor(selectedLead.status)}`}
+                      value={selectedLead.status}
+                      onChange={(e) => updateStatus(selectedLead.id, e.target.value)}
+                    >
+                      <option value="Chưa hỗ trợ">Chưa hỗ trợ</option>
+                      <option value="Đang hỗ trợ">Đang hỗ trợ</option>
+                      <option value="Đã hỗ trợ">Đã hỗ trợ</option>
+                    </select>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 bg-gray-50 rounded-b-xl flex justify-end">
+              <button onClick={() => setSelectedLead(null)} className="px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded hover:bg-gray-300">Đóng</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ==========================================
+// 4. SETTINGS VIEW
+// ==========================================
+const SettingsView = ({ settings, setSettings }) => {
+  const [formData, setFormData] = useState(settings);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    setSettings(formData);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  return (
+    <div className="max-w-3xl bg-white p-6 rounded-xl border border-gray-200 shadow-sm animate-fade-in">
+      <h2 className="text-lg font-bold text-gray-800 mb-6 border-b pb-3">Thông tin liên hệ chung</h2>
+      
+      <form onSubmit={handleSave} className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-1">
+            <label className="flex items-center text-sm font-medium text-gray-700"><Phone className="w-4 h-4 mr-1 text-gray-500"/> Hotline</label>
+            <input 
+              type="text" className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              value={formData.hotline} onChange={e => setFormData({...formData, hotline: e.target.value})}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="flex items-center text-sm font-medium text-gray-700"><Mail className="w-4 h-4 mr-1 text-gray-500"/> Email</label>
+            <input 
+              type="email" className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <label className="flex items-center text-sm font-medium text-gray-700"><MapPin className="w-4 h-4 mr-1 text-gray-500"/> Địa chỉ cửa hàng</label>
+          <input 
+            type="text" className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})}
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className="flex items-center text-sm font-medium text-gray-700"><LinkIcon className="w-4 h-4 mr-1 text-gray-500"/> Liên kết Google Maps</label>
+          <input 
+            type="text" className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-blue-600"
+            value={formData.map} onChange={e => setFormData({...formData, map: e.target.value})}
+          />
+        </div>
+
+        <h3 className="text-md font-semibold text-gray-800 pt-4 border-t mt-6">Mạng xã hội</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-1">
+            <label className="flex items-center text-sm font-medium text-gray-700"><Facebook className="w-4 h-4 mr-1 text-blue-600"/> Facebook</label>
+            <input 
+              type="text" className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              value={formData.facebook} onChange={e => setFormData({...formData, facebook: e.target.value})}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="flex items-center text-sm font-medium text-gray-700"><MessageCircle className="w-4 h-4 mr-1 text-blue-500"/> Zalo OA</label>
+            <input 
+              type="text" className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              value={formData.zalo} onChange={e => setFormData({...formData, zalo: e.target.value})}
+            />
+          </div>
+        </div>
+
+        <div className="pt-6 flex items-center">
+          <button type="submit" className="px-6 py-2.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 font-medium flex items-center">
+            Lưu cấu hình
+          </button>
+          {saved && <span className="ml-4 text-green-600 flex items-center text-sm font-medium animate-fade-in"><Check className="w-4 h-4 mr-1"/> Đã lưu thành công!</span>}
+        </div>
+      </form>
+    </div>
+  );
+};                                               
