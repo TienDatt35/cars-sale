@@ -372,8 +372,8 @@ export default async function CarDetailPage({ params }: PageProps) {
                     if (paragraph.startsWith("![")) {
                       const m = paragraph.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
                       if (m) return (
-                        <div key={index} className="my-8 rounded-lg overflow-hidden">
-                          <img src={m[2]} alt={m[1]} className="w-full h-auto object-cover rounded-lg" />
+                        <div key={index} className="my-8 -mx-6 md:-mx-12 overflow-hidden">
+                          <img src={m[2]} alt={m[1]} className="w-full h-auto object-cover" />
                         </div>
                       );
                     }
@@ -382,11 +382,11 @@ export default async function CarDetailPage({ params }: PageProps) {
                       return (
                         <div key={index}>
                           {descImage && index > 0 && (
-                            <div className="my-8 rounded-lg overflow-hidden">
+                            <div className="my-8 -mx-6 md:-mx-12 overflow-hidden">
                               <img
                                 src={descImage}
                                 alt={paragraph.replace("## ", "")}
-                                className="w-full h-auto object-cover rounded-lg"
+                                className="w-full h-auto object-cover"
                               />
                             </div>
                           )}
