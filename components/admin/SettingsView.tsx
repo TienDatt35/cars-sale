@@ -73,14 +73,16 @@ export default function SettingsView() {
 
         <div className="space-y-1">
           <label className="flex items-center text-sm font-medium text-gray-700">
-            <LinkIcon className="w-4 h-4 mr-1 text-gray-500" /> Liên kết Google Maps
+            <LinkIcon className="w-4 h-4 mr-1 text-gray-500" /> Liên kết nhúng Google Maps
           </label>
           <input
             type="text"
             className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm text-blue-600"
+            placeholder="Dán link từ Google Maps → Chia sẻ → Nhúng bản đồ → Sao chép src"
             value={formData.map}
             onChange={(e) => setFormData({ ...formData, map: e.target.value })}
           />
+          <p className="text-xs text-gray-400">Vào Google Maps → Chia sẻ → Nhúng bản đồ → Sao chép đường dẫn trong src="..."</p>
         </div>
 
         <h3 className="text-md font-semibold text-gray-800 pt-4 border-t mt-6">Mạng xã hội</h3>
