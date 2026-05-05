@@ -33,7 +33,6 @@ interface QuoteModalProps {
 export function QuoteModal({ open, onOpenChange, selectedCarId }: QuoteModalProps) {
   const { adminCars } = useStore();
   const [requestType, setRequestType] = useState("Báo giá");
-  const [paymentType, setPaymentType] = useState("installment");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [selectedCar, setSelectedCar] = useState(selectedCarId || "");
@@ -43,23 +42,24 @@ export function QuoteModal({ open, onOpenChange, selectedCarId }: QuoteModalProp
   const resetForm = () => {
     setName("");
     setPhone("");
-    setPaymentType("installment");
     setRequestType("Báo giá");
     if (!selectedCarId) setSelectedCar("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const carName = adminCars.find((c) => c.id === selectedCar)?.name ?? selectedCar;
-    const payment =
-      paymentType === "installment" ? "Trả góp" : paymentType === "full" ? "Trả thẳng" : "Chưa rõ";
+    if (!selectedCar) {
+      toast.error("Vui lòng chọn dòng xe.");
+      return;
+    }
+    const carName = adminCars.find((c) => c.id === selectedCar)?.name || selectedCar;
 
     setSubmitting(true);
     try {
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: requestType, name, phone, car: carName, payment }),
+        body: JSON.stringify({ type: requestType, name, phone, car: carName, payment: "Chưa rõ" }),
       });
       if (res.ok) {
         setSubmitted(true);
@@ -81,11 +81,10 @@ export function QuoteModal({ open, onOpenChange, selectedCarId }: QuoteModalProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl p-0 overflow-hidden [&>button]:hidden">
-        {/* Custom Close Button - Circle with X like the reference image */}
+      <DialogContent showCloseButton={false} className="sm:max-w-3xl p-0 overflow-hidden">
         <button
           onClick={() => onOpenChange(false)}
-          className="absolute -top-3 -right-3 z-50 w-8 h-8 rounded-full bg-gray-800 border-2 border-white text-white flex items-center justify-center hover:bg-gray-700 transition-colors shadow-lg"
+          className="absolute top-3 right-3 z-50 w-7 h-7 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center transition-colors"
         >
           <X className="h-4 w-4" />
         </button>
@@ -112,7 +111,7 @@ export function QuoteModal({ open, onOpenChange, selectedCarId }: QuoteModalProp
           <div className="flex-1 p-6 md:p-8">
             <DialogHeader className="mb-6">
               <DialogTitle className="text-2xl md:text-3xl font-bold text-primary">
-                Báo giá lăn bánh và lái thử
+                Báo giá / Lái thử
               </DialogTitle>
               <DialogDescription className="text-base mt-2">
                 Vui lòng điền thông tin để nhận báo giá chi tiết và đặt lịch lái thử
@@ -138,37 +137,11 @@ export function QuoteModal({ open, onOpenChange, selectedCarId }: QuoteModalProp
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="Báo giá" id="quote" />
-                      <Label htmlFor="quote" className="cursor-pointer text-base">
-                        Báo giá lăn bánh
-                      </Label>
+                      <Label htmlFor="quote" className="cursor-pointer text-base">Báo giá</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="Lái thử" id="testdrive" />
-                      <Label htmlFor="testdrive" className="cursor-pointer text-base">
-                        Đặt lịch lái thử
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-base">Hình thức thanh toán</Label>
-                  <RadioGroup
-                    value={paymentType}
-                    onValueChange={setPaymentType}
-                    className="flex gap-6"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="installment" id="installment" />
-                      <Label htmlFor="installment" className="cursor-pointer text-base">
-                        Trả góp
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="full" id="full" />
-                      <Label htmlFor="full" className="cursor-pointer text-base">
-                        Trả thẳng
-                      </Label>
+                      <Label htmlFor="testdrive" className="cursor-pointer text-base">Lái thử</Label>
                     </div>
                   </RadioGroup>
                 </div>
@@ -203,7 +176,6 @@ export function QuoteModal({ open, onOpenChange, selectedCarId }: QuoteModalProp
                   <Select
                     value={selectedCar}
                     onValueChange={setSelectedCar}
-                    required
                   >
                     <SelectTrigger className="h-11 w-full">
                       <SelectValue placeholder="Chọn dòng xe" />
