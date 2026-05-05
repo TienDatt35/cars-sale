@@ -19,6 +19,9 @@ import {
   Check,
   MessageCircle,
   Phone,
+  Clock,
+  ShieldCheck,
+  CreditCard,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -163,8 +166,9 @@ async function getSettings() {
 
 export default async function CarDetailPage({ params }: PageProps) {
   const { id } = await params;
+  const staticCar = getCarById(id);
   const [car, dbSettings] = await Promise.all([
-    getCarById(id) ? Promise.resolve(getCarById(id)) : getCarFromDb(id),
+    staticCar ? Promise.resolve(staticCar) : getCarFromDb(id),
     getSettings(),
   ]);
   const zalo = dbSettings?.zalo || storeInfo.zalo;
@@ -253,24 +257,19 @@ export default async function CarDetailPage({ params }: PageProps) {
                 <div className="flex-1">
                   <QuoteButton carId={car.id} className="w-full" />
                 </div>
-                <a
-                  href={zalo}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1"
-                >
-                  <Button className="w-full h-12 bg-blue-500 hover:bg-blue-600 gap-2">
+                <Button asChild className="flex-1 h-12 bg-blue-500 hover:bg-blue-600 gap-2">
+                  <a href={zalo} target="_blank" rel="noopener noreferrer">
                     <MessageCircle className="h-5 w-5" />
                     Liên hệ tư vấn Zalo
-                  </Button>
-                </a>
-                <a href={`tel:${hotline.replace(/\s/g, "")}`} className="flex-1">
-                  <Button className="w-full h-12 bg-green-500 hover:bg-green-600 gap-2 relative overflow-hidden">
+                  </a>
+                </Button>
+                <Button asChild className="flex-1 h-12 bg-green-500 hover:bg-green-600 gap-2 relative overflow-hidden">
+                  <a href={`tel:${hotline.replace(/\s/g, "")}`}>
                     <span className="absolute inset-0 rounded-md bg-white/10 animate-pulse" />
                     <Phone className="h-5 w-5 relative z-10 animate-bounce" />
                     <span className="relative z-10">Gọi ngay</span>
-                  </Button>
-                </a>
+                  </a>
+                </Button>
               </div>
 
               {/* Features */}
@@ -321,88 +320,46 @@ export default async function CarDetailPage({ params }: PageProps) {
 
           {/* Support Info */}
           <section className="mb-12">
-            <h2 className="text-xl md:text-2xl font-bold mb-6">
-              Hỗ trợ khách hàng
-            </h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-6">Hỗ trợ khách hàng</h2>
             <div className="grid md:grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="pt-6 text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold mb-1">Tư vấn 24/7</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Hotline: 0909 123 456
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6 text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold mb-1">Bảo hành chính hãng</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Bảo hành 3-5 năm toàn quốc
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6 text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold mb-1">Hỗ trợ trả góp</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Lãi suất ưu đãi từ 0%/năm
-                  </p>
-                </CardContent>
-              </Card>
+              {[
+                { Icon: Clock, title: "Tư vấn 24/7", desc: `Hotline: ${hotline}` },
+                { Icon: ShieldCheck, title: "Bảo hành chính hãng", desc: "Bảo hành 3-5 năm toàn quốc" },
+                { Icon: CreditCard, title: "Hỗ trợ trả góp", desc: "Lãi suất ưu đãi từ 0%/năm" },
+              ].map(({ Icon, title, desc }) => (
+                <Card key={title}>
+                  <CardContent className="pt-6 text-center">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center">
+                      <Icon className="w-6 h-6 text-primary" />
+                    </div>
+                    <h3 className="font-semibold mb-1">{title}</h3>
+                    <p className="text-sm text-muted-foreground">{desc}</p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </section>
 
           {/* Specifications */}
           <section className="mb-12">
-            <h2 className="text-xl md:text-2xl font-bold mb-6">
-              Thông số kỹ thuật
-            </h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-6">Thông số kỹ thuật</h2>
             <Card>
               <CardContent className="p-0">
                 <div className="divide-y">
-                  <div className="flex p-4">
-                    <span className="font-medium w-1/3">Động cơ</span>
-                    <span className="w-2/3">{car.specifications.engine}</span>
-                  </div>
-                  <div className="flex p-4 bg-muted/50">
-                    <span className="font-medium w-1/3">Công suất</span>
-                    <span className="w-2/3">{car.specifications.power}</span>
-                  </div>
-                  <div className="flex p-4">
-                    <span className="font-medium w-1/3">Mô-men xoắn</span>
-                    <span className="w-2/3">{car.specifications.torque}</span>
-                  </div>
-                  <div className="flex p-4 bg-muted/50">
-                    <span className="font-medium w-1/3">Hộp số</span>
-                    <span className="w-2/3">{car.specifications.transmission}</span>
-                  </div>
-                  <div className="flex p-4">
-                    <span className="font-medium w-1/3">Tiêu thụ nhiên liệu</span>
-                    <span className="w-2/3">{car.specifications.fuelConsumption}</span>
-                  </div>
-                  <div className="flex p-4 bg-muted/50">
-                    <span className="font-medium w-1/3">Số chỗ ngồi</span>
-                    <span className="w-2/3">{car.specifications.seats} chỗ</span>
-                  </div>
-                  <div className="flex p-4">
-                    <span className="font-medium w-1/3">Kích thước (DxRxC)</span>
-                    <span className="w-2/3">{car.specifications.dimensions}</span>
-                  </div>
+                  {([
+                    ["Động cơ", car.specifications.engine],
+                    ["Công suất", car.specifications.power],
+                    ["Mô-men xoắn", car.specifications.torque],
+                    ["Hộp số", car.specifications.transmission],
+                    ["Tiêu thụ nhiên liệu", car.specifications.fuelConsumption],
+                    ["Số chỗ ngồi", `${car.specifications.seats} chỗ`],
+                    ["Kích thước (DxRxC)", car.specifications.dimensions],
+                  ] as [string, string][]).map(([label, value], i) => (
+                    <div key={label} className={`flex p-4 ${i % 2 === 1 ? "bg-muted/50" : ""}`}>
+                      <span className="font-medium w-1/3">{label}</span>
+                      <span className="w-2/3">{value}</span>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>

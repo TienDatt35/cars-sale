@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { MapPin, Phone, Mail, Clock, Facebook } from "lucide-react";
-import { storeInfo, cars } from "@/lib/car-data";
+import { storeInfo } from "@/lib/car-data";
 import { useStore } from "@/lib/store";
 
 export function Footer() {
-  const { settings } = useStore();
-  const fordCars = cars.filter((car) => car.brand === "Ford");
+  const { settings, adminCars } = useStore();
+  const fordCars = adminCars.filter((car) => !car.locked && car.brand === "Ford");
 
   return (
     <footer className="bg-foreground text-background">
@@ -45,10 +45,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-muted">
               {fordCars.map((car) => (
                 <li key={car.id}>
-                  <Link 
-                    href={`/xe/${car.id}`}
-                    className="hover:text-background transition-colors"
-                  >
+                  <Link href={`/xe/${car.id}`} className="hover:text-background transition-colors">
                     {car.name}
                   </Link>
                 </li>
@@ -107,7 +104,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-muted-foreground/20 mt-8 pt-8 text-center text-sm text-muted">
-          <p>&copy; 2024 {storeInfo.name}. Tất cả quyền được bảo lưu.</p>
+          <p>&copy; {new Date().getFullYear()} {storeInfo.name}. Tất cả quyền được bảo lưu.</p>
           <p className="mt-1">
             Giấy phép kinh doanh số: 0123456789 - Cấp ngày: 01/01/2020
           </p>

@@ -18,23 +18,17 @@ export function ContactButtons({ selectedCarId, showOnScroll = false }: ContactB
   const [isVisible, setIsVisible] = useState(!showOnScroll);
 
   useEffect(() => {
-    if (!showOnScroll) {
-      setIsVisible(true);
-      return;
-    }
+    if (!showOnScroll) return;
 
     const handleScroll = () => {
       const priceSection = document.getElementById("price-table");
-      if (priceSection) {
-        const rect = priceSection.getBoundingClientRect();
-        // Show buttons when price table is in view or past it
-        setIsVisible(rect.top <= window.innerHeight * 0.8);
-      }
+      if (!priceSection) return;
+      const next = priceSection.getBoundingClientRect().top <= window.innerHeight * 0.8;
+      setIsVisible((prev) => (prev === next ? prev : next));
     };
 
     window.addEventListener("scroll", handleScroll);
-    handleScroll(); // Check initial position
-
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, [showOnScroll]);
 
@@ -53,33 +47,21 @@ export function ContactButtons({ selectedCarId, showOnScroll = false }: ContactB
           <span className="hidden sm:inline">Báo giá/Lái thử</span>
         </Button>
 
-        {/* Zalo Button */}
-        <a
-          href={settings.zalo || storeInfo.zalo}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex"
-        >
-          <Button
-            className="h-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 px-5 gap-2"
-          >
+        <Button asChild className="h-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 px-5 gap-2">
+          <a href={settings.zalo || storeInfo.zalo} target="_blank" rel="noopener noreferrer">
             <MessageCircle className="h-5 w-5" />
             <span className="hidden sm:inline">Liên hệ Zalo</span>
-          </Button>
-        </a>
+          </a>
+        </Button>
 
-        {/* Hotline Button with Animation */}
-        <a href={`tel:${(settings.hotline || storeInfo.hotline).replace(/\s/g, "")}`} className="inline-flex">
-          <Button
-            className="h-14 rounded-full shadow-lg bg-green-500 hover:bg-green-600 px-5 gap-2 relative overflow-hidden group"
-          >
-            {/* Ripple animation */}
+        <Button asChild className="h-14 rounded-full shadow-lg bg-green-500 hover:bg-green-600 px-5 gap-2 relative overflow-hidden">
+          <a href={`tel:${(settings.hotline || storeInfo.hotline).replace(/\s/g, "")}`}>
             <span className="absolute inset-0 rounded-full bg-white/20 animate-ping" />
             <span className="absolute inset-0 rounded-full bg-white/10 animate-pulse" />
             <Phone className="h-5 w-5 relative z-10 animate-bounce" />
             <span className="hidden sm:inline relative z-10">{settings.hotline || storeInfo.hotline}</span>
-          </Button>
-        </a>
+          </a>
+        </Button>
       </div>
 
       <QuoteModal

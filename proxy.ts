@@ -14,7 +14,7 @@ const PROTECTED: { method: string; pattern: RegExp }[] = [
   { method: "DELETE", pattern: /^\/api\/upload$/ },
 ];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname, method } = { pathname: request.nextUrl.pathname, method: request.method };
 
   const isProtected = PROTECTED.some(

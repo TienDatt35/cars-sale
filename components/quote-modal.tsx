@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -37,6 +37,10 @@ export function QuoteModal({ open, onOpenChange, selectedCarId }: QuoteModalProp
   const [phone, setPhone] = useState("");
   const [selectedCar, setSelectedCar] = useState(selectedCarId || "");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setSelectedCar(selectedCarId || "");
+  }, [selectedCarId]);
   const [submitted, setSubmitted] = useState(false);
 
   const resetForm = () => {

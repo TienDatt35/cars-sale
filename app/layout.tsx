@@ -29,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="vi" className="bg-background mdl-js">
+    <html lang="vi" className="bg-background">
       <body className={`${inter.variable} font-sans antialiased`}>
         <StoreProvider>
           {children}

@@ -57,53 +57,22 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="text-center">
-                <CardContent className="pt-6">
-                  <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <Shield className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Xe chính hãng 100%</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Cam kết xe Ford nhập khẩu chính hãng với đầy đủ giấy tờ pháp lý
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="text-center">
-                <CardContent className="pt-6">
-                  <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <Gift className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Ưu đãi hấp dẫn</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Nhiều chương trình khuyến mãi, quà tặng giá trị trong năm
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="text-center">
-                <CardContent className="pt-6">
-                  <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <CreditCard className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Hỗ trợ trả góp, vay vốn</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Thủ tục nhanh gọn, lãi suất ưu đãi từ 0%, duyệt hồ sơ trong 24h
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="text-center">
-                <CardContent className="pt-6">
-                  <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <RefreshCw className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Thu cũ đổi mới</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Định giá xe cũ miễn phí, hỗ trợ thủ tục sang tên nhanh chóng
-                  </p>
-                </CardContent>
-              </Card>
+              {([
+                { Icon: Shield, title: "Xe chính hãng 100%", desc: "Cam kết xe Ford nhập khẩu chính hãng với đầy đủ giấy tờ pháp lý" },
+                { Icon: Gift, title: "Ưu đãi hấp dẫn", desc: "Nhiều chương trình khuyến mãi, quà tặng giá trị trong năm" },
+                { Icon: CreditCard, title: "Hỗ trợ trả góp, vay vốn", desc: "Thủ tục nhanh gọn, lãi suất ưu đãi từ 0%, duyệt hồ sơ trong 24h" },
+                { Icon: RefreshCw, title: "Thu cũ đổi mới", desc: "Định giá xe cũ miễn phí, hỗ trợ thủ tục sang tên nhanh chóng" },
+              ] as const).map(({ Icon, title, desc }) => (
+                <Card key={title} className="text-center">
+                  <CardContent className="pt-6">
+                    <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                      <Icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="font-semibold mb-2">{title}</h3>
+                    <p className="text-sm text-muted-foreground">{desc}</p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </section>

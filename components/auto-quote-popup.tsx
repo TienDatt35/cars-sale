@@ -11,10 +11,9 @@ export function AutoQuotePopup() {
   const pathname = usePathname();
 
   useEffect(() => {
-    setOpen(false);
-    const timer = setTimeout(() => {
-      setOpen(true);
-    }, DELAY_MS);
+    if (pathname.startsWith("/admin")) return;
+    if (open) setOpen(false);
+    const timer = setTimeout(() => setOpen(true), DELAY_MS);
     return () => clearTimeout(timer);
   }, [pathname]);
 
