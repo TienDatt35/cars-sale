@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Gift, Shield, CreditCard, RefreshCw } from "lucide-react";
 
 export default function HomePage() {
-  const { adminCars } = useStore();
+  const { adminCars, settings } = useStore();
   const fordCars = adminCars
     .filter((car) => !car.locked && car.brand === "Ford")
     .map(adminCarToWebCar);
@@ -146,18 +146,18 @@ export default function HomePage() {
                       <div className="space-y-3 text-muted-foreground">
                         <p>
                           <span className="font-medium text-foreground">Địa chỉ:</span>{" "}
-                          {storeInfo.address}
+                          {settings.address || storeInfo.address}
                         </p>
                         <p>
                           <span className="font-medium text-foreground">Hotline:</span>{" "}
-                          <a href={`tel:${storeInfo.hotline}`} className="text-primary hover:underline">
-                            {storeInfo.hotline}
+                          <a href={`tel:${(settings.hotline || storeInfo.hotline).replace(/\s/g, "")}`} className="text-primary hover:underline">
+                            {settings.hotline || storeInfo.hotline}
                           </a>
                         </p>
                         <p>
                           <span className="font-medium text-foreground">Email:</span>{" "}
-                          <a href={`mailto:${storeInfo.email}`} className="text-primary hover:underline">
-                            {storeInfo.email}
+                          <a href={`mailto:${settings.email || storeInfo.email}`} className="text-primary hover:underline">
+                            {settings.email || storeInfo.email}
                           </a>
                         </p>
                         <p>

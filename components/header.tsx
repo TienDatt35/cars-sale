@@ -30,13 +30,11 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
-        <div className="container mx-auto px-4">
-          <div className="flex h-16 items-center justify-between">
+        <div className="container mx-auto px-4 h-20">
+          <div className="flex h-full items-stretch justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#003478]">
-                <span className="text-lg font-bold text-white">F</span>
-              </div>
+            <Link href="/" className="flex items-center gap-2 self-center">
+              <img src="/icon.svg" alt="Ford" className="h-10 w-20 object-contain" />
               <div className="hidden sm:block">
                 <h1 className="text-lg font-bold text-foreground">FORD AUTO STAR</h1>
                 <p className="text-xs text-muted-foreground">Đại lý Ford chính hãng</p>
@@ -44,13 +42,13 @@ export function Header() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-6">
-              <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">
+            <nav className="hidden lg:flex self-stretch flex-1 mx-6">
+              <Link href="/" className="flex-1 text-sm font-semibold flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all duration-200">
                 Trang chủ
               </Link>
-              
+
               <DropdownMenu>
-                <DropdownMenuTrigger className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+                <DropdownMenuTrigger className="flex-1 text-sm font-semibold flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all duration-200 gap-1 cursor-pointer">
                   Sản phẩm
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
@@ -64,17 +62,17 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Link href="/#promotions" className="text-sm font-medium hover:text-primary transition-colors">
+              <Link href="/#promotions" className="flex-1 text-sm font-semibold flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all duration-200">
                 Khuyến mãi
               </Link>
 
-              <Link href="/#contact" className="text-sm font-medium hover:text-primary transition-colors">
+              <Link href="/#contact" className="flex-1 text-sm font-semibold flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all duration-200">
                 Liên hệ
               </Link>
             </nav>
 
             {/* Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 self-center">
               <Button
                 variant="ghost"
                 size="icon"

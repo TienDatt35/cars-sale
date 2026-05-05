@@ -11,9 +11,9 @@ interface CarCardProps {
 
 export function CarCard({ car, showFeaturedBadge = true }: CarCardProps) {
   return (
-    <Link href={`/xe/${car.id}`}>
-      <Card className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
-        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+    <Link href={`/xe/${car.id}`} className="h-full">
+      <Card className="group h-full flex flex-col overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
+        <div className="relative aspect-[4/3] overflow-hidden bg-muted shrink-0">
           {car.thumbnail ? (
             <Image
               src={car.thumbnail}
@@ -38,24 +38,24 @@ export function CarCard({ car, showFeaturedBadge = true }: CarCardProps) {
             </Badge>
           </div>
         </div>
-        <CardContent className="p-4">
-          <div className="mb-2">
+        <CardContent className="p-4 flex flex-col flex-1">
+          <div className="mb-2 flex-1">
             <p className="text-sm text-muted-foreground">{car.brand}</p>
             <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors">
               {car.name}
             </h3>
           </div>
-          <div className="flex items-center justify-between">
-            <p className="text-primary font-bold">
-              {formatPrice(car.basePrice)}
-            </p>
-          </div>
-          <div className="mt-3 flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1 mb-3 min-h-[28px]">
             {car.features.slice(0, 2).map((feature, index) => (
               <Badge key={index} variant="outline" className="text-xs">
                 {feature}
               </Badge>
             ))}
+          </div>
+          <div className="flex items-center justify-between mt-auto">
+            <p className="text-primary font-bold">
+              {formatPrice(car.basePrice)}
+            </p>
           </div>
         </CardContent>
       </Card>

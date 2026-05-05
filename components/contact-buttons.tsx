@@ -5,6 +5,7 @@ import { Phone, Car, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QuoteModal } from "./quote-modal";
 import { storeInfo } from "@/lib/car-data";
+import { useStore } from "@/lib/store";
 
 interface ContactButtonsProps {
   selectedCarId?: string;
@@ -12,6 +13,7 @@ interface ContactButtonsProps {
 }
 
 export function ContactButtons({ selectedCarId, showOnScroll = false }: ContactButtonsProps) {
+  const { settings } = useStore();
   const [quoteModalOpen, setQuoteModalOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(!showOnScroll);
 
@@ -48,12 +50,12 @@ export function ContactButtons({ selectedCarId, showOnScroll = false }: ContactB
           className="h-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 px-5 gap-2"
         >
           <Car className="h-5 w-5" />
-          <span className="hidden sm:inline">Báo giá lăn bánh</span>
+          <span className="hidden sm:inline">Báo giá/Lái thử</span>
         </Button>
 
         {/* Zalo Button */}
         <a
-          href={storeInfo.zalo}
+          href={settings.zalo || storeInfo.zalo}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex"
@@ -67,7 +69,7 @@ export function ContactButtons({ selectedCarId, showOnScroll = false }: ContactB
         </a>
 
         {/* Hotline Button with Animation */}
-        <a href={`tel:${storeInfo.hotline.replace(/\s/g, "")}`} className="inline-flex">
+        <a href={`tel:${(settings.hotline || storeInfo.hotline).replace(/\s/g, "")}`} className="inline-flex">
           <Button
             className="h-14 rounded-full shadow-lg bg-green-500 hover:bg-green-600 px-5 gap-2 relative overflow-hidden group"
           >
@@ -75,7 +77,7 @@ export function ContactButtons({ selectedCarId, showOnScroll = false }: ContactB
             <span className="absolute inset-0 rounded-full bg-white/20 animate-ping" />
             <span className="absolute inset-0 rounded-full bg-white/10 animate-pulse" />
             <Phone className="h-5 w-5 relative z-10 animate-bounce" />
-            <span className="hidden sm:inline relative z-10">{storeInfo.hotline}</span>
+            <span className="hidden sm:inline relative z-10">{settings.hotline || storeInfo.hotline}</span>
           </Button>
         </a>
       </div>

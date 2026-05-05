@@ -20,7 +20,7 @@ export function QuoteButton({ carId, className = "" }: QuoteButtonProps) {
         className={`h-12 bg-primary hover:bg-primary/90 gap-2 ${className}`}
       >
         <Car className="h-5 w-5" />
-        Báo giá lăn bánh
+        Báo giá/Lái thử
       </Button>
       <QuoteModal
         open={quoteModalOpen}

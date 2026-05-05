@@ -96,6 +96,41 @@ function renderInline(text: string): React.ReactNode {
   });
 }
 
+type Segment =
+  | { type: "text"; content: string }
+  | { type: "cols2"; left: string; right: string };
+
+function parseSegments(description: string): Segment[] {
+  const chunks = description.split(/(\[2cols\][\s\S]*?\[\/2cols\])/g);
+  const segments: Segment[] = [];
+  for (const chunk of chunks) {
+    if (chunk.startsWith("[2cols]")) {
+      const inner = chunk.slice(7, -8).trim();
+      const [left = "", right = ""] = inner.split("|||").map((s) => s.trim());
+      segments.push({ type: "cols2", left, right });
+    } else {
+      for (const p of chunk.split("\n\n").map((p) => p.trim()).filter(Boolean)) {
+        segments.push({ type: "text", content: p });
+      }
+    }
+  }
+  return segments;
+}
+
+function renderColContent(text: string): React.ReactNode {
+  return text
+    .split("\n\n")
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p, i) => {
+      const m = p.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+      if (m) return <img key={i} src={m[2]} alt={m[1]} className="w-full h-auto rounded-lg object-cover" />;
+      if (p.startsWith("## "))
+        return <h4 key={i} className="font-bold text-lg text-foreground mb-1">{renderInline(p.slice(3))}</h4>;
+      return <p key={i} className="text-foreground text-sm leading-relaxed">{renderInline(p)}</p>;
+    });
+}
+
 export async function generateStaticParams() {
   return cars.map((car) => ({
     id: car.id,
@@ -118,9 +153,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+async function getSettings() {
+  try {
+    return await prisma.settings.findUnique({ where: { id: 1 } });
+  } catch {
+    return null;
+  }
+}
+
 export default async function CarDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const car = getCarById(id) ?? await getCarFromDb(id);
+  const [car, dbSettings] = await Promise.all([
+    getCarById(id) ? Promise.resolve(getCarById(id)) : getCarFromDb(id),
+    getSettings(),
+  ]);
+  const zalo = dbSettings?.zalo || storeInfo.zalo;
+  const hotline = dbSettings?.hotline || storeInfo.hotline;
 
   if (!car) {
     notFound();
@@ -206,7 +254,7 @@ export default async function CarDetailPage({ params }: PageProps) {
                   <QuoteButton carId={car.id} className="w-full" />
                 </div>
                 <a
-                  href={storeInfo.zalo}
+                  href={zalo}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1"
@@ -216,7 +264,7 @@ export default async function CarDetailPage({ params }: PageProps) {
                     Liên hệ tư vấn Zalo
                   </Button>
                 </a>
-                <a href={`tel:${storeInfo.hotline.replace(/\s/g, "")}`} className="flex-1">
+                <a href={`tel:${hotline.replace(/\s/g, "")}`} className="flex-1">
                   <Button className="w-full h-12 bg-green-500 hover:bg-green-600 gap-2 relative overflow-hidden">
                     <span className="absolute inset-0 rounded-md bg-white/10 animate-pulse" />
                     <Phone className="h-5 w-5 relative z-10 animate-bounce" />
@@ -365,56 +413,58 @@ export default async function CarDetailPage({ params }: PageProps) {
             <h2 className="text-xl md:text-2xl font-bold mb-6">
               Đánh giá chi tiết {car.name}
             </h2>
-            <Card>
-              <CardContent className="py-8 px-6 md:px-12">
-                <article className="prose prose-slate max-w-none">
-                  {car.description.split("\n\n").map((paragraph, index) => {
-                    if (paragraph.startsWith("![")) {
-                      const m = paragraph.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
-                      if (m) return (
-                        <div key={index} className="my-8 -mx-6 md:-mx-12 overflow-hidden">
-                          <img src={m[2]} alt={m[1]} className="w-full h-auto object-cover" />
-                        </div>
-                      );
-                    }
-                    if (paragraph.startsWith("## ")) {
-                      const descImage = car.descriptionImages?.[Math.min(index, (car.descriptionImages?.length || 1) - 1)];
-                      return (
-                        <div key={index}>
-                          {descImage && index > 0 && (
-                            <div className="my-8 -mx-6 md:-mx-12 overflow-hidden">
-                              <img
-                                src={descImage}
-                                alt={paragraph.replace("## ", "")}
-                                className="w-full h-auto object-cover"
-                              />
-                            </div>
-                          )}
-                          <h3 className="text-xl font-bold mt-8 mb-4 text-foreground">
+            <div className="rounded-xl border shadow-sm bg-card overflow-hidden">
+                {parseSegments(car.description).map((seg, index) => {
+                  if (seg.type === "cols2") {
+                    return (
+                      <div key={index} className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-6 md:px-12 my-8">
+                        <div className="space-y-3">{renderColContent(seg.left)}</div>
+                        <div className="space-y-3">{renderColContent(seg.right)}</div>
+                      </div>
+                    );
+                  }
+
+                  const paragraph = seg.content;
+                  const imgMatch = paragraph.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+                  if (imgMatch) {
+                    return <img key={index} src={imgMatch[2]} alt={imgMatch[1]} className="w-full h-auto block" />;
+                  }
+
+                  if (paragraph.startsWith("## ")) {
+                    const descImage = car.descriptionImages?.[Math.min(index, (car.descriptionImages?.length || 1) - 1)];
+                    return (
+                      <div key={index}>
+                        {descImage && index > 0 && (
+                          <img src={descImage} alt={paragraph.replace("## ", "")} className="w-full h-auto block" />
+                        )}
+                        <div className="px-6 md:px-12">
+                          <h3 className="text-2xl md:text-3xl font-extrabold mt-8 mb-4 text-foreground tracking-tight">
                             {renderInline(paragraph.replace("## ", ""))}
                           </h3>
                         </div>
-                      );
-                    } else if (paragraph.startsWith("- ")) {
-                      const items = paragraph.split("\n");
-                      return (
-                        <ul key={index} className="list-disc list-inside space-y-2 my-4 text-foreground">
-                          {items.map((item, i) => (
-                            <li key={i}>{renderInline(item.replace(/^- /, ""))}</li>
-                          ))}
-                        </ul>
-                      );
-                    } else {
-                      return (
-                        <p key={index} className="text-foreground leading-relaxed mb-4">
-                          {renderInline(paragraph)}
-                        </p>
-                      );
-                    }
-                  })}
-                </article>
-              </CardContent>
-            </Card>
+                      </div>
+                    );
+                  }
+
+                  if (paragraph.startsWith("- ")) {
+                    const items = paragraph.split("\n");
+                    return (
+                      <ul key={index} className="list-disc list-inside space-y-2 my-4 px-6 md:px-12 text-foreground">
+                        {items.map((item, i) => (
+                          <li key={i}>{renderInline(item.replace(/^- /, ""))}</li>
+                        ))}
+                      </ul>
+                    );
+                  }
+
+                  return (
+                    <p key={index} className={`text-foreground leading-relaxed px-6 md:px-12 mb-4 ${index === 0 ? "pt-8" : ""}`}>
+                      {renderInline(paragraph)}
+                    </p>
+                  );
+                })}
+                <div className="pb-8" />
+            </div>
           </section>
         </div>
       </main>

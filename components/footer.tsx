@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { MapPin, Phone, Mail, Clock, Facebook } from "lucide-react";
 import { storeInfo, cars } from "@/lib/car-data";
+import { useStore } from "@/lib/store";
 
 export function Footer() {
+  const { settings } = useStore();
   const fordCars = cars.filter((car) => car.brand === "Ford");
 
   return (
@@ -11,26 +15,22 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Store Info */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#003478]">
-                <span className="text-lg font-bold text-white">F</span>
-              </div>
-              <div>
-                <h3 className="font-bold">{storeInfo.name}</h3>
-              </div>
+            <div className="flex items-center gap-3 mb-4">
+              <img src="/icon.svg" alt="Ford" className="h-10 w-20 object-contain brightness-0 invert" />
+              <h3 className="font-bold">{storeInfo.name}</h3>
             </div>
             <div className="space-y-3 text-sm text-muted">
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>{storeInfo.address}</span>
+                <span>{settings.address || storeInfo.address}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 flex-shrink-0" />
-                <span>Hotline: {storeInfo.hotline}</span>
+                <span>Hotline: {settings.hotline || storeInfo.hotline}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 flex-shrink-0" />
-                <span>{storeInfo.email}</span>
+                <span>{settings.email || storeInfo.email}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 flex-shrink-0" />
@@ -61,7 +61,7 @@ export function Footer() {
             <h3 className="font-bold mb-4">Kết nối với chúng tôi</h3>
             <div className="flex gap-3 mb-6">
               <a
-                href={storeInfo.facebook}
+                href={settings.facebook || storeInfo.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 transition-colors"
@@ -70,7 +70,7 @@ export function Footer() {
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href={storeInfo.zalo}
+                href={settings.zalo || storeInfo.zalo}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 hover:bg-blue-600 transition-colors"

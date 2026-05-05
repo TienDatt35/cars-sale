@@ -16,6 +16,7 @@ import {
   Image as ImageIcon,
   Heading2,
   AlignLeft,
+  Columns2,
 } from "lucide-react";
 import type { AdminCar, AdminVersion } from "@/lib/store";
 
@@ -114,6 +115,17 @@ export default function CarFormModal({ car, onClose, onSave }: CarFormModalProps
     const url = prompt("Nhập URL liên kết:");
     if (!url) return;
     applyInline("[", `](${url})`);
+  };
+
+  const insertTwoCols = () => {
+    const ta = descRef.current;
+    const pos = ta ? ta.selectionStart : formData.description.length;
+    const template = "\n\n[2cols]\n![ảnh](url-ảnh-trái)\nMô tả cột trái\n|||\n![ảnh](url-ảnh-phải)\nMô tả cột phải\n[/2cols]\n\n";
+    setFormData((prev) => ({
+      ...prev,
+      description: prev.description.substring(0, pos) + template + prev.description.substring(pos),
+    }));
+    setTimeout(() => { ta?.focus(); }, 0);
   };
 
   const handleDescImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -756,6 +768,16 @@ export default function CarFormModal({ car, onClose, onSave }: CarFormModalProps
                         onChange={handleDescImageUpload}
                       />
                     </label>
+                    <div className="w-px h-5 bg-gray-300 mx-1" />
+                    <button
+                      type="button"
+                      title="Chèn 2 cột (ảnh + text)"
+                      onClick={insertTwoCols}
+                      className="p-1.5 hover:bg-gray-200 rounded text-gray-700 flex items-center gap-1 text-xs font-medium"
+                    >
+                      <Columns2 className="w-4 h-4" />
+                      <span>2 cột</span>
+                    </button>
                   </div>
                   <textarea
                     ref={descRef}
